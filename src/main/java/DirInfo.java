@@ -108,7 +108,7 @@ public class DirInfo {
 
                     cur += DirInfo.getRWX(file, true);
                     cur += file.lastModified() + " ";
-                    cur += file.length() + " Bytes";
+                    cur += file.length() + " Bytes ";
 
                     info.add(cur);
                 }
@@ -130,7 +130,7 @@ public class DirInfo {
     }
 
     private static void toWrite(ArrayList<String> res, boolean r, boolean o, boolean d, String outputName) {
-        if (r) Collections.reverse(res);
+        if (r) Collections.reverse(res); // Что именно меняется на противоположный порядок вывода? Файлы или информация о них?
 
         if (o) {
             File file = new File("C:\\Users\\Vladislav\\IdeaProjects\\DirectoryInfo\\testOutput\\" + outputName);
