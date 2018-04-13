@@ -28,10 +28,11 @@ public class CMDArgs {
         try {
             parser.parseArgument(args);
 
-            if (dir.isEmpty()) throw new CmdLineException(parser, "No argument is given"); // ???
+            if (dir.isEmpty()) throw new CmdLineException("No argument is given"); // ???
 
 
         } catch (CmdLineException e) {
+            System.err.println(e.getMessage());
             System.err.println("invalid input");
             return;
         }
