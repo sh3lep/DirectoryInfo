@@ -9,26 +9,18 @@ import java.util.Collections;
 
 public class DirInfo {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
-        if (args.length > 6) throw new IllegalArgumentException("Too many flags selected.");
+        CMDArgs values = new CMDArgs(args);
 
-        boolean l = false; // Аргументы-флаги. Значения по умолчанию
-        boolean h = false;
-        boolean r = false;
-        boolean o = false;
+        boolean l = values.longFormat;
+        boolean h = values.humanReadable;
+        boolean r = values.reverse;
+        boolean o = values.out != null;
 
-        File dir = new File(args[args.length - 1]);
+        File dir = new File(values.dir);
         boolean d = dir.isDirectory(); // Дополнительный флаг: директория или нет (файл)
-        String outputName = "!!!???"; // ???
-
-        for (String arg : args) { // Переопределение флагов
-            if (arg.equals("-l")) l = true;
-            if (arg.equals("-h")) h = true;
-            if (arg.equals("-r")) r = true;
-            if (arg.equals("-o")) o = true;
-            if (arg.matches("\\w+\\.\\w+") && o) outputName = arg;
-        }
+        File outputName = new File(".//testOutput//" + values.out);
 
         ArrayList res = getInfo(l, h, r, d, dir);
 
@@ -145,10 +137,9 @@ public class DirInfo {
         return info;
     }
 
-    private static void toWrite(ArrayList<String> res, boolean o, boolean d, String outputName) {
+    private static void toWrite(ArrayList<String> res, boolean o, boolean d, File outputName) {
         if (o) {
-            File file = new File("C:\\Users\\Vladislav\\IdeaProjects\\DirectoryInfo\\testOutput\\" + outputName);
-            try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(file.toURI()))) {
+            try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(outputName.toURI()))) {
                 for (String info : res) {
                     writer.write(info + " ");
                     if (d) writer.newLine(); // Как оптимизировать проверку d/!d ?

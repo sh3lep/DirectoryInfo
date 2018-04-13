@@ -1,3 +1,4 @@
+-l is set
 compas.exe 111 1129460098000 1847712 Bytes
 English 111 1523236681182 4096 Bytes
 schedule.pdf 101 1523054130682 477991 Bytes

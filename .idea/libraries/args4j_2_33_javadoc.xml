@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="args4j-2.33-javadoc">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Desktop/args4j-2.33.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/Desktop/args4j-2.33-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/Desktop/args4j-2.33-sources.jar!/" />
+      <root url="jar://$USER_HOME$/Desktop/args4j-2.33.jar!/OSGI-OPT/src" />
+    </SOURCES>
+  </library>
+</component>

@@ -1,5 +1,10 @@
+-l is set
 compas.exe 111 1129460098000 1847712 Bytes
 English 111 1523236681182 4096 Bytes
 schedule.pdf 101 1523054130682 477991 Bytes
 schem1.rar 111 1522614834920 1929 Bytes
 text.txt 111 1523236564871 810 Bytes
+-l is set
+-h is set
+-r is set
+-o file is set
