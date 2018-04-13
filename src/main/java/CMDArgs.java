@@ -32,7 +32,7 @@ public class CMDArgs {
 
 
         } catch (CmdLineException e) {
-            System.err.println("5051");
+            System.err.println("invalid input");
             return;
         }
 
