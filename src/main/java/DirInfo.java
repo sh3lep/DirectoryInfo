@@ -30,9 +30,9 @@ public class DirInfo {
             if (arg.matches("\\w+\\.\\w+") && o) outputName = arg;
         }
 
-        ArrayList res = getInfo(l, h, d, dir);
+        ArrayList res = getInfo(l, h, r, d, dir);
 
-        toWrite(res, r, o, d, outputName); // Что не так с res?
+        toWrite(res, o, d, outputName); // Что не так с res? // Стоит ли делать постепенную запись/вывод?
 
     }
 
@@ -40,31 +40,43 @@ public class DirInfo {
         String res = "";
         if (flag) {
 
-            if (file.canRead()) { res += 1; } else { res += 0; }
-            if (file.canWrite()) { res += 1; } else { res += 0; }
-            if (file.canExecute()) { res += 1; } else { res += 0; }
+            if (file.canRead()) {
+                res += 1;
+            } else {
+                res += 0;
+            }
+            if (file.canWrite()) {
+                res += 1;
+            } else {
+                res += 0;
+            }
+            if (file.canExecute()) {
+                res += 1;
+            } else {
+                res += 0;
+            }
 
         } else {
 
             if (file.canRead()) res += "r";
             if (file.canWrite()) res += "w";
-            if (file.canExecute()) res += "x";
+            if (file.canExecute()) res += "x"; // Как по-другому?
 
         }
 
-        return res + " ";
+        return res;
     }
 
     private static String fromBytes(File file) { // Перевод из байтов. Добавить округление?
         String res;
         Long length = file.length();
         if (file.length() >= 1073741824) { // Больше гб или нет
-            res = Double.toString((double)length / 1073741824.0) + " GB";
+            res = Double.toString((double) length / 1073741824.0) + " GB";
         } else {
             if (file.length() >= 1048576) {
-                res = Double.toString((double)length / 1048576.0) + " MB"; // Больше мб или нет
+                res = Double.toString((double) length / 1048576.0) + " MB"; // Больше мб или нет
             } else {
-                res = Double.toString((double)length / 1024.0) + " KB"; // Т.к меньше МБ, то подсчет в КБ
+                res = Double.toString((double) length / 1024.0) + " KB"; // Т.к меньше МБ, то подсчет в КБ
             }
         }
         return res;
@@ -75,7 +87,7 @@ public class DirInfo {
         return sdf.format(file.lastModified());
     }
 
-    private static ArrayList getInfo(boolean l, boolean h, boolean d, File dir) { // Получаем сводку запрашиваемых данных в листе
+    private static ArrayList getInfo(boolean l, boolean h, boolean r, boolean d, File dir) { // Получаем сводку запрашиваемых данных в листе
 
         ArrayList<String> info = new ArrayList<>();
 
@@ -83,71 +95,75 @@ public class DirInfo {
             info.add(dir.getName());
 
             if (l && !h) { // Если просто расширенный формат
-                info.add(DirInfo.getRWX(dir, true));
+                info.add(getRWX(dir, true));
                 info.add(Long.toString(dir.lastModified()));
                 info.add(Long.toString(dir.length()) + " Bytes");
             }
 
             if (l && h) { // Если человеко-читаемый формат
-                info.add(DirInfo.getRWX(dir, false));
+                info.add(getRWX(dir, false));
                 info.add(getTime(dir));
-                info.add(DirInfo.fromBytes(dir));
+                info.add(fromBytes(dir));
             }
 
-        } else {
+            if (r) Collections.reverse(info);
+
+        } else { // Если директория
             File[] list = dir.listFiles();
 
-            if (!l && !h) {
-                for (File file : list) { // Проверить исключения
-                    info.add(file.getName());
-                }
+            if (!l && !h) { // Короткий формат - только имя
+                for (File file : list) info.add(file.getName()); // Проверить исключения
             }
-            if (l && !h) {
+
+            if (l) { // Если длинный формат
                 for (File file : list) {
-                    String cur = file.getName() + " ";
 
-                    cur += DirInfo.getRWX(file, true);
-                    cur += file.lastModified() + " ";
-                    cur += file.length() + " Bytes ";
+                    ArrayList<String> cur = new ArrayList<>();
+                    cur.add(file.getName());
 
-                    info.add(cur);
-                }
-            }
-            if (l && h) {
-                for (File file : list) {
-                    String cur = file.getName() + " ";
+                    if (!h) { // Просто длинный формат
+                        cur.add(getRWX(file, true));
+                        cur.add(Long.toString(file.lastModified()));
+                        cur.add(file.length() + " Bytes");
+                    } else { // Длинный человеко-читаемый
+                        cur.add(DirInfo.getRWX(dir, false));
+                        cur.add(getTime(file));
+                        cur.add(fromBytes(file));
+                    }
 
-                    cur += DirInfo.getRWX(dir, false);
-                    cur += getTime(file) + " ";
-                    cur += DirInfo.fromBytes(file);
+                    if (r) Collections.reverse(cur); // Проверка флага на обратный порядок вывода
 
-                    info.add(cur);
+                    String formattedCur = cur.toString() // Не слишком ли заморочно для reverse?
+                            .replace(",", "")
+                            .replace("[", "")
+                            .replace("]", "")
+                            .trim();
+                    info.add(formattedCur);
                 }
             }
         }
-
         return info;
     }
 
-    private static void toWrite(ArrayList<String> res, boolean r, boolean o, boolean d, String outputName) {
-        if (r) Collections.reverse(res); // Что именно меняется на противоположный порядок вывода? Файлы или информация о них?
-
+    private static void toWrite(ArrayList<String> res, boolean o, boolean d, String outputName) {
         if (o) {
             File file = new File("C:\\Users\\Vladislav\\IdeaProjects\\DirectoryInfo\\testOutput\\" + outputName);
             try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(file.toURI()))) {
-                for (String info: res) {
-                    writer.write(info);
+                for (String info : res) {
+                    writer.write(info + " ");
                     if (d) writer.newLine(); // Как оптимизировать проверку d/!d ?
                 }
-            } catch (IOException ex) { System.out.println(":("); }
+            } catch (IOException ex) {
+                System.out.println(":(");
+            }
         } else {
             if (d) {
-                for (String info: res) {
+                for (String info : res) {
                     System.out.println(info);
                 }
             } else {
-                for (String info: res) {
-                    System.out.print(info);
+                for (String info : res) {
+                    System.out.print(info + " ");
                 }
             }
         }
