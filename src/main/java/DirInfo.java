@@ -11,7 +11,7 @@ public class DirInfo {
 
     public static void main(String[] args) throws IOException {
 
-        CMDArgs values = new CMDArgs(args);
+        CmdLineArgs values = new CmdLineArgs(args);
 
         boolean l = values.longFormat;
         boolean h = values.humanReadable;
@@ -19,12 +19,15 @@ public class DirInfo {
         boolean o = values.out != null;
 
         File dir = new File(values.dir);
+
+        if (!dir.exists()) throw new IllegalArgumentException("No such file or directory found");
+
         boolean d = dir.isDirectory(); // Дополнительный флаг: директория или нет (файл)
         File outputName = new File(".//testOutput//" + values.out);
 
-        ArrayList res = getInfo(l, h, r, d, dir);
+        ArrayList<String> res = getInfo(l, h, r, d, dir);
 
-        toWrite(res, o, d, outputName); // Что не так с res? // Стоит ли делать постепенную запись/вывод?
+        toWrite(res, o, outputName);
 
     }
 
@@ -32,27 +35,21 @@ public class DirInfo {
         String res = "";
         if (flag) {
 
-            if (file.canRead()) {
-                res += 1;
-            } else {
-                res += 0;
-            }
-            if (file.canWrite()) {
-                res += 1;
-            } else {
-                res += 0;
-            }
-            if (file.canExecute()) {
-                res += 1;
-            } else {
-                res += 0;
-            }
+            if (file.canRead()) res += 1;
+            else res += 0;
+            if (file.canWrite()) res += 1;
+            else res += 0;
+            if (file.canExecute()) res += 1;
+            else res += 0;
 
         } else {
 
             if (file.canRead()) res += "r";
+            else res += "-";
             if (file.canWrite()) res += "w";
-            if (file.canExecute()) res += "x"; // Как по-другому?
+            else res += "-";
+            if (file.canExecute()) res += "x";
+            else res += "-";
 
         }
 
@@ -79,84 +76,62 @@ public class DirInfo {
         return sdf.format(file.lastModified());
     }
 
-    private static ArrayList getInfo(boolean l, boolean h, boolean r, boolean d, File dir) { // Получаем сводку запрашиваемых данных в листе
+    private static String getData(boolean lh, File dir) {
+
+        StringBuilder data = new StringBuilder();
+
+        if (!lh) { // Если просто расширенный формат
+            data.append(getRWX(dir, true)).append(" ");
+            data.append(dir.lastModified()).append(" ");
+            data.append(dir.length()).append(" Bytes");
+        } else { // Если человеко-читаемый формат
+            data.append(getRWX(dir, false)).append(" ");
+            data.append(getTime(dir)).append(" ");
+            data.append(fromBytes(dir));
+        }
+        return data.toString();
+    }
+
+    private static ArrayList<String> getInfo(boolean l, boolean h, boolean r, boolean d, File dir) {
 
         ArrayList<String> info = new ArrayList<>();
 
-        if (!d) { // Если не директория -> файл
-            info.add(dir.getName());
+        if (!d || dir.listFiles() == null) { // Если не директория -> файл
+            StringBuilder cur = new StringBuilder();
+            cur.append(dir.getName()).append(" ");
 
-            if (l && !h) { // Если просто расширенный формат
-                info.add(getRWX(dir, true));
-                info.add(Long.toString(dir.lastModified()));
-                info.add(Long.toString(dir.length()) + " Bytes");
-            }
+            if (l) cur.append(getData(h, dir));
 
-            if (l && h) { // Если человеко-читаемый формат
-                info.add(getRWX(dir, false));
-                info.add(getTime(dir));
-                info.add(fromBytes(dir));
-            }
-
-            if (r) Collections.reverse(info);
+            info.add(cur.toString());
 
         } else { // Если директория
             File[] list = dir.listFiles();
 
-            if (!l && !h) { // Короткий формат - только имя
-                for (File file : list) info.add(file.getName()); // Проверить исключения
-            }
+            if (!l && !h && (list != null)) for (File file : list) info.add(file.getName());
 
-            if (l) { // Если длинный формат
+            if (l && (list != null)) { // Если длинный формат
                 for (File file : list) {
-
-                    ArrayList<String> cur = new ArrayList<>();
-                    cur.add(file.getName());
-
-                    if (!h) { // Просто длинный формат
-                        cur.add(getRWX(file, true));
-                        cur.add(Long.toString(file.lastModified()));
-                        cur.add(file.length() + " Bytes");
-                    } else { // Длинный человеко-читаемый
-                        cur.add(DirInfo.getRWX(dir, false));
-                        cur.add(getTime(file));
-                        cur.add(fromBytes(file));
-                    }
-
-                    if (r) Collections.reverse(cur); // Проверка флага на обратный порядок вывода
-
-                    String formattedCur = cur.toString() // Не слишком ли заморочно для reverse?
-                            .replace(",", "")
-                            .replace("[", "")
-                            .replace("]", "")
-                            .trim();
-                    info.add(formattedCur);
+                    String cur = file.getName() + " " + getData(h, file);
+                    info.add(cur);
                 }
             }
         }
+        if (r) Collections.reverse(info);
         return info;
     }
 
-    private static void toWrite(ArrayList<String> res, boolean o, boolean d, File outputName) {
+    private static void toWrite(ArrayList<String> res, boolean o, File outputName) {
         if (o) {
             try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(outputName.toURI()))) {
                 for (String info : res) {
-                    writer.write(info + " ");
-                    if (d) writer.newLine(); // Как оптимизировать проверку d/!d ?
+                    writer.write(info);
+                    writer.newLine();
                 }
             } catch (IOException ex) {
                 System.out.println(":(");
             }
         } else {
-            if (d) {
-                for (String info : res) {
-                    System.out.println(info);
-                }
-            } else {
-                for (String info : res) {
-                    System.out.print(info + " ");
-                }
-            }
+            for (String info : res) System.out.println(info);
         }
     }
 }

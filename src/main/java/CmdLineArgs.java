@@ -5,35 +5,41 @@ import org.kohsuke.args4j.Option;
 
 import java.io.IOException;
 
-public class CMDArgs {
+class CmdLineArgs {
 
     @Option(name = "-l", usage = "switch output to long format")
-    public boolean longFormat;
+    boolean longFormat;
 
     @Option(name = "-h", usage = "switch output to human-readable format")
-    public boolean humanReadable;
+    boolean humanReadable;
 
     @Option(name = "-r", usage = "reverse output")
-    public boolean reverse;
+    boolean reverse;
 
     @Option(name = "-o", usage = "output to this file", metaVar = "OUTPUT")
-    public String out;
+    String out;
 
     @Argument()
-    public String dir;
+    String dir;
 
-    public CMDArgs(String[] args) throws IOException {
+    CmdLineArgs(String[] args) throws IOException {
         CmdLineParser parser = new CmdLineParser(this);
 
         try {
             parser.parseArgument(args);
 
-            if (dir.isEmpty()) throw new CmdLineException("No argument is given"); // ???
+            if (dir.isEmpty()) {
+                System.err.println("No argument is given"); // ???
+                return;
+            }
 
+            if (!longFormat && humanReadable) {
+                throw new CmdLineException("-h couldn't be set without -l");
+            }
 
         } catch (CmdLineException e) {
+            System.err.print("invalid input: ");
             System.err.println(e.getMessage());
-            System.err.println("invalid input");
             return;
         }
 
