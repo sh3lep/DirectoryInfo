@@ -1,3 +1,5 @@
+package DirInfo;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,11 +20,26 @@ public class DirInfo {
         boolean r = values.reverse;
         boolean o = values.out != null;
 
+        if (!l && h) {
+            System.err.println("check if input is correct");
+            return;
+        }
+
+        if (values.dir == null) {
+            System.err.println("file path is not set");
+            return;
+        }
+
         File dir = new File(values.dir);
 
-        if (!dir.exists()) throw new IllegalArgumentException("No such file or directory found");
+        if (!dir.exists()) {
+            System.err.print("selected file path does not exist: ");
+            System.err.println(dir);
+            return;
+        }
 
         boolean d = dir.isDirectory(); // Дополнительный флаг: директория или нет (файл)
+
         File outputName = new File(".//testOutput//" + values.out);
 
         ArrayList<String> res = getInfo(l, h, r, d, dir);
@@ -32,43 +49,43 @@ public class DirInfo {
     }
 
     private static String getRWX(File file, boolean flag) { // Проверка на чтение-запись-выполнение в 2х видах
-        String res = "";
+        StringBuilder res = new StringBuilder();
         if (flag) {
 
-            if (file.canRead()) res += 1;
-            else res += 0;
-            if (file.canWrite()) res += 1;
-            else res += 0;
-            if (file.canExecute()) res += 1;
-            else res += 0;
+            if (file.canRead()) res.append(1);
+            else res.append(0);
+            if (file.canWrite()) res.append(1);
+            else res.append(0);
+            if (file.canExecute()) res.append(1);
+            else res.append(0);
 
         } else {
 
-            if (file.canRead()) res += "r";
-            else res += "-";
-            if (file.canWrite()) res += "w";
-            else res += "-";
-            if (file.canExecute()) res += "x";
-            else res += "-";
+            if (file.canRead()) res.append('r');
+            else res.append('-');
+            if (file.canWrite()) res.append('w');
+            else res.append('-');
+            if (file.canExecute()) res.append('x');
+            else res.append('-');
 
         }
 
-        return res;
+        return res.toString();
     }
 
     private static String fromBytes(File file) { // Перевод из байтов. Добавить округление?
-        String res;
+        StringBuilder res = new StringBuilder();
         Long length = file.length();
         if (file.length() >= 1073741824) { // Больше гб или нет
-            res = Double.toString((double) length / 1073741824.0) + " GB";
+            res.append((double) length / 1073741824.0).append(" GB");
         } else {
             if (file.length() >= 1048576) {
-                res = Double.toString((double) length / 1048576.0) + " MB"; // Больше мб или нет
+                res.append((double) length / 1048576.0).append(" MB"); // Больше мб или нет
             } else {
-                res = Double.toString((double) length / 1024.0) + " KB"; // Т.к меньше МБ, то подсчет в КБ
+                res.append((double) length / 1024.0).append(" KB"); // Т.к меньше МБ, то подсчет в КБ
             }
         }
-        return res;
+        return res.toString();
     }
 
     private static String getTime(File file) {
@@ -76,11 +93,12 @@ public class DirInfo {
         return sdf.format(file.lastModified());
     }
 
-    private static String getData(boolean lh, File dir) {
+    private static String getData(boolean h, File dir) {
 
         StringBuilder data = new StringBuilder();
 
-        if (!lh) { // Если просто расширенный формат
+        data.append(dir.getName()).append(" ");
+        if (!h) { // Если просто расширенный формат
             data.append(getRWX(dir, true)).append(" ");
             data.append(dir.lastModified()).append(" ");
             data.append(dir.length()).append(" Bytes");
@@ -96,25 +114,16 @@ public class DirInfo {
 
         ArrayList<String> info = new ArrayList<>();
 
-        if (!d || dir.listFiles() == null) { // Если не директория -> файл
-            StringBuilder cur = new StringBuilder();
-            cur.append(dir.getName()).append(" ");
+        if (!d || dir.listFiles() == null) { // Если файл или пустая директория
 
-            if (l) cur.append(getData(h, dir));
+            if (!l) info.add(dir.getName());
+            else info.add(getData(h, dir));
 
-            info.add(cur.toString());
-
-        } else { // Если директория
+        } else { // Если не пустая директория
             File[] list = dir.listFiles();
 
-            if (!l && !h && (list != null)) for (File file : list) info.add(file.getName());
-
-            if (l && (list != null)) { // Если длинный формат
-                for (File file : list) {
-                    String cur = file.getName() + " " + getData(h, file);
-                    info.add(cur);
-                }
-            }
+            if (!l) for (File file : list) info.add(file.getName());
+            else for (File file : list) info.add(getData(h, file));
         }
         if (r) Collections.reverse(info);
         return info;

@@ -9,8 +9,8 @@
         <module name="DirectoryInfo" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="DirectoryInfo" target="1.9" />
+    <bytecodeTargetLevel target="9">
+      <module name="DirectoryInfo" target="9" />
     </bytecodeTargetLevel>
   </component>
 </project>

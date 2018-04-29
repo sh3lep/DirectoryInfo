@@ -1,1 +1,2 @@
--h couldn't be set without -l
+invalid input: option "-h" requires the option(s) [-l]
+check if input is correct
