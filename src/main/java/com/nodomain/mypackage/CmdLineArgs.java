@@ -1,4 +1,4 @@
-package DirInfo;
+package com.nodomain.mypackage;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -24,7 +24,7 @@ class CmdLineArgs {
     @Argument(metaVar = "dir", required = true)
     String dir;
 
-    CmdLineArgs(String[] args) throws IOException {
+    CmdLineArgs(String[] args) throws IOException, CmdLineException {
         CmdLineParser parser = new CmdLineParser(this);
 
         try {
@@ -33,7 +33,7 @@ class CmdLineArgs {
         } catch (CmdLineException e) {
             System.err.print("invalid input: ");
             System.err.println(e.getMessage());
-            return;
+            throw e;
         }
 
         if (longFormat) System.out.println("-l is set");

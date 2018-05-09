@@ -1,3 +1,0 @@
--l is set
--h is set
-selected file path does not exist: .\forTest\GoodWeatherInSaintP

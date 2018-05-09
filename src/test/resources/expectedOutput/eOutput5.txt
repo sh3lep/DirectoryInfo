@@ -1,0 +1,3 @@
+-l is set
+-h is set
+selected file path does not exist: .\src\test\resources\forTest\GoodWeatherInSaintP

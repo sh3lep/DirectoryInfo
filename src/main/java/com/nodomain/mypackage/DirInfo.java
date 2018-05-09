@@ -1,4 +1,6 @@
-package DirInfo;
+package com.nodomain.mypackage;
+
+import org.kohsuke.args4j.CmdLineException;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -11,7 +13,7 @@ import java.util.Collections;
 
 public class DirInfo {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, CmdLineException {
 
         CmdLineArgs values = new CmdLineArgs(args);
 
@@ -19,16 +21,6 @@ public class DirInfo {
         boolean h = values.humanReadable;
         boolean r = values.reverse;
         boolean o = values.out != null;
-
-        if (!l && h) {
-            System.err.println("check if input is correct");
-            return;
-        }
-
-        if (values.dir == null) {
-            System.err.println("file path is not set");
-            return;
-        }
 
         File dir = new File(values.dir);
 
@@ -40,7 +32,7 @@ public class DirInfo {
 
         boolean d = dir.isDirectory(); // Дополнительный флаг: директория или нет (файл)
 
-        File outputName = new File(".//testOutput//" + values.out);
+        File outputName = new File(".//src//test//resources//testOutput//" + values.out);
 
         ArrayList<String> res = getInfo(l, h, r, d, dir);
 
